@@ -11,3 +11,12 @@ message.textContent = "Objectif atteint !";
 }
 }
 bouton.addEventListener("click", ajouterUnPoint);
+
+const canvas = document.querySelector("#game");
+const ctx = canvas.getContext("2d");
+
+// Couleur rouge
+ctx.fillStyle = "red";
+
+// Dessiner un rectangle
+ctx.fillRect(100, 100, 50, 50);
