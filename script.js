@@ -1,22 +1,275 @@
-let score = 0;
-19
-const bouton = document.querySelector("#bouton");
-const affichageScore = document.querySelector("#score");
-const message = document.querySelector("#message");
-function ajouterUnPoint() {
-score = score + 1;
-affichageScore.textContent = score;
-if (score >= 10) {
-message.textContent = "Objectif atteint !";
-}
-}
-bouton.addEventListener("click", ajouterUnPoint);
 
-const canvas = document.querySelector("#game");
+const canvas = document.querySelector("#jeu");
 const ctx = canvas.getContext("2d");
 
-// Couleur rouge
-ctx.fillStyle = "red";
+const message = document.querySelector("#message");
+const affichageCle = document.querySelector("#cle");
+const boutonRecommencer = document.querySelector("#recommencer");
 
-// Dessiner un rectangle
-ctx.fillRect(100, 100, 50, 50);
+// Dimensions du labyrinthe
+const taille = 40;
+const colonnes = 15;
+const lignes = 11;
+
+// Personnage
+let joueur = { x: 1, y: 1 };
+
+// Monstre
+let monstre = { x: 7, y: 5 };
+
+// Clé et sortie
+let cle = { x: 1, y: 1 };
+let sortie = { x: 13, y: 9 };
+
+let possedeCle = false;
+let termine = false;
+
+// Création du labyrinthe
+let labyrinthe = [];
+
+function genererLabyrinthe() {
+
+    labyrinthe = [];
+
+    // Créer les murs et les passages
+    for (let y = 0; y < lignes; y++) {
+
+        labyrinthe[y] = [];
+
+        for (let x = 0; x < colonnes; x++) {
+
+            // Les bords sont toujours des murs
+            if (x === 0 || y === 0 ||
+                x === colonnes - 1 || y === lignes - 1) {
+
+                labyrinthe[y][x] = 1;
+
+            } else {
+
+                labyrinthe[y][x] = Math.random() < 0.28 ? 1 : 0;
+
+            }
+        }
+    }
+
+    // Garder un chemin vers la sortie
+    for (let x = 1; x <= 13; x++) {
+        labyrinthe[1][x] = 0;
+    }
+
+    for (let y = 1; y <= 9; y++) {
+        labyrinthe[y][13] = 0;
+    }
+
+    // Position de départ
+    joueur = { x: 1, y: 1 };
+
+    // Position de la sortie
+    sortie = { x: 13, y: 9 };
+
+    // Placer la clé sur le chemin
+    cle = {
+        x: Math.floor(Math.random() * 11) + 2,
+        y: 1
+    };
+
+    // Placer le monstre
+    monstre = { x: 7, y: 5 };
+
+    while (labyrinthe[monstre.y][monstre.x] === 1 ||
+           (monstre.x === joueur.x && monstre.y === joueur.y)) {
+
+        monstre.x = Math.floor(Math.random() * 13) + 1;
+        monstre.y = Math.floor(Math.random() * 9) + 1;
+    }
+
+    possedeCle = false;
+    termine = false;
+
+    message.textContent = "Trouve la clé et rejoins la sortie !";
+    affichageCle.textContent = "Clé : non trouvée";
+
+    dessiner();
+}
+
+
+// Dessiner le labyrinthe
+function dessiner() {
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let y = 0; y < lignes; y++) {
+
+        for (let x = 0; x < colonnes; x++) {
+
+            if (labyrinthe[y][x] === 1) {
+                ctx.fillStyle = "#26352c";
+            } else {
+                ctx.fillStyle = "#e8eee9";
+            }
+
+            ctx.fillRect(
+                x * taille,
+                y * taille,
+                taille,
+                taille
+            );
+
+        }
+    }
+
+    // Dessiner la clé
+    ctx.font = "25px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    if (!possedeCle) {
+        ctx.fillText("🔑",
+            cle.x * taille + taille / 2,
+            cle.y * taille + taille / 2);
+    }
+
+    // Dessiner la sortie
+    ctx.fillStyle = possedeCle ? "green" : "red";
+
+    ctx.fillRect(
+        sortie.x * taille + 5,
+        sortie.y * taille + 5,
+        taille - 10,
+        taille - 10
+    );
+
+    // Dessiner le monstre
+    ctx.fillText("👾",
+        monstre.x * taille + taille / 2,
+        monstre.y * taille + taille / 2);
+
+    // Dessiner le joueur
+    ctx.fillText("🧍",
+        joueur.x * taille + taille / 2,
+        joueur.y * taille + taille / 2);
+}
+
+
+// Déplacer le joueur
+function deplacerJoueur(dx, dy) {
+
+    if (termine) {
+        return;
+    }
+
+    let nouveauX = joueur.x + dx;
+    let nouveauY = joueur.y + dy;
+
+    // Vérifier si la case est un mur
+    if (labyrinthe[nouveauY][nouveauX] === 1) {
+        return;
+    }
+
+    joueur.x = nouveauX;
+    joueur.y = nouveauY;
+
+    // Récupérer la clé
+    if (joueur.x === cle.x && joueur.y === cle.y) {
+
+        possedeCle = true;
+        affichageCle.textContent = "Clé : trouvée !";
+        message.textContent = "Tu as la clé ! Trouve la sortie !";
+    }
+
+    // Vérifier la sortie
+    if (joueur.x === sortie.x && joueur.y === sortie.y) {
+
+        if (possedeCle) {
+            message.textContent = "Bravo ! Tu as gagné !";
+            termine = true;
+        } else {
+            message.textContent = "Il te faut la clé pour sortir !";
+        }
+    }
+
+    // Vérifier le monstre
+    verifierMonstre();
+
+    dessiner();
+}
+
+
+// Détecter les touches du clavier
+document.addEventListener("keydown", function(event) {
+
+    if (event.key === "ArrowUp" || event.key === "z") {
+        deplacerJoueur(0, -1);
+    }
+
+    if (event.key === "ArrowDown" || event.key === "s") {
+        deplacerJoueur(0, 1);
+    }
+
+    if (event.key === "ArrowLeft" || event.key === "q") {
+        deplacerJoueur(-1, 0);
+    }
+
+    if (event.key === "ArrowRight" || event.key === "d") {
+        deplacerJoueur(1, 0);
+    }
+
+});
+
+
+// Déplacement du monstre
+function deplacerMonstre() {
+
+    if (termine) {
+        return;
+    }
+
+    let directions = [
+        { x: 0, y: -1 },
+        { x: 0, y: 1 },
+        { x: -1, y: 0 },
+        { x: 1, y: 0 }
+    ];
+
+    // Choisir une direction aléatoire
+    let direction = directions[
+        Math.floor(Math.random() * directions.length)
+    ];
+
+    let nouveauX = monstre.x + direction.x;
+    let nouveauY = monstre.y + direction.y;
+
+    // Vérifier que le monstre ne traverse pas les murs
+    if (labyrinthe[nouveauY][nouveauX] === 0) {
+
+        monstre.x = nouveauX;
+        monstre.y = nouveauY;
+
+    }
+
+    verifierMonstre();
+    dessiner();
+}
+
+
+// Vérifier si le monstre touche le joueur
+function verifierMonstre() {
+
+    if (joueur.x === monstre.x &&
+        joueur.y === monstre.y) {
+
+        message.textContent = "Le monstre t'a attrapé !";
+        termine = true;
+    }
+}
+
+
+// Recommencer le jeu
+boutonRecommencer.addEventListener("click", genererLabyrinthe);
+
+
+// Lancer le jeu
+genererLabyrinthe();
+
+// Le monstre bouge toutes les 600 millisecondes
+setInterval(deplacerMonstre, 600);
