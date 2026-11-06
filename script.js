@@ -5,97 +5,55 @@ const ctx = canvas.getContext("2d");
 const message = document.querySelector("#message");
 const affichageCle = document.querySelector("#cle");
 const boutonRecommencer = document.querySelector("#recommencer");
-
-// Dimensions du labyrinthe
 const taille = 40;
 const colonnes = 15;
 const lignes = 11;
 
-// Personnage
 let joueur = { x: 1, y: 1 };
-
-// Monstre
 let monstre = { x: 7, y: 5 };
-
-// Clé et sortie
 let cle = { x: 1, y: 1 };
 let sortie = { x: 13, y: 9 };
-
 let possedeCle = false;
 let termine = false;
-
-// Création du labyrinthe
 let labyrinthe = [];
 
 function genererLabyrinthe() {
-
     labyrinthe = [];
-
-    // Créer les murs et les passages
     for (let y = 0; y < lignes; y++) {
-
         labyrinthe[y] = [];
-
         for (let x = 0; x < colonnes; x++) {
-
-            // Les bords sont toujours des murs
             if (x === 0 || y === 0 ||
-                x === colonnes - 1 || y === lignes - 1) {
-
+               x === colonnes - 1 || y === lignes - 1) {
                 labyrinthe[y][x] = 1;
-
-            } else {
-
-                labyrinthe[y][x] = Math.random() < 0.28 ? 1 : 0;
-
+          } else {
+           labyrinthe[y][x] = Math.random() < 0.28 ? 1 : 0;
             }
-        }
-    }
-
-    // Garder un chemin vers la sortie
+        } }
     for (let x = 1; x <= 13; x++) {
-        labyrinthe[1][x] = 0;
-    }
+        labyrinthe[1][x] = 0; }
 
     for (let y = 1; y <= 9; y++) {
-        labyrinthe[y][13] = 0;
-    }
-
-    // Position de départ
+        labyrinthe[y][13] = 0;}
     joueur = { x: 1, y: 1 };
-
-    // Position de la sortie
-    sortie = { x: 13, y: 9 };
-
-    // Placer la clé sur le chemin
+    sortie = { x: 13, y: 8 };
     cle = {
         x: Math.floor(Math.random() * 11) + 2,
-        y: 1
-    };
+        y: 1};
 
-    // Placer le monstre
     monstre = { x: 7, y: 5 };
-
     while (labyrinthe[monstre.y][monstre.x] === 1 ||
            (monstre.x === joueur.x && monstre.y === joueur.y)) {
 
         monstre.x = Math.floor(Math.random() * 13) + 1;
-        monstre.y = Math.floor(Math.random() * 9) + 1;
-    }
+        monstre.y = Math.floor(Math.random() * 9) + 1;}
 
     possedeCle = false;
     termine = false;
+message.textContent = "Trouve la clé et rejoins la sortie !";
+affichageCle.textContent = "Clé : non trouvée";
 
-    message.textContent = "Trouve la clé et rejoins la sortie !";
-    affichageCle.textContent = "Clé : non trouvée";
-
-    dessiner();
-}
-
-
-// Dessiner le labyrinthe
+    dessiner();}
 function dessiner() {
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     for (let y = 0; y < lignes; y++) {
@@ -118,66 +76,42 @@ function dessiner() {
         }
     }
 
-    // Dessiner la clé
     ctx.font = "25px Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-
     if (!possedeCle) {
         ctx.fillText("🔑",
             cle.x * taille + taille / 2,
-            cle.y * taille + taille / 2);
-    }
-
-    // Dessiner la sortie
+            cle.y * taille + taille / 2);}
     ctx.fillStyle = possedeCle ? "green" : "red";
-
     ctx.fillRect(
         sortie.x * taille + 5,
         sortie.y * taille + 5,
         taille - 10,
         taille - 10
     );
-
-    // Dessiner le monstre
     ctx.fillText("👾",
         monstre.x * taille + taille / 2,
         monstre.y * taille + taille / 2);
-
-    // Dessiner le joueur
     ctx.fillText("🧍",
         joueur.x * taille + taille / 2,
-        joueur.y * taille + taille / 2);
-}
-
-
-// Déplacer le joueur
+        joueur.y * taille + taille / 2);}
 function deplacerJoueur(dx, dy) {
-
     if (termine) {
-        return;
-    }
+        return;d}
 
     let nouveauX = joueur.x + dx;
     let nouveauY = joueur.y + dy;
-
-    // Vérifier si la case est un mur
     if (labyrinthe[nouveauY][nouveauX] === 1) {
         return;
     }
-
     joueur.x = nouveauX;
     joueur.y = nouveauY;
-
-    // Récupérer la clé
     if (joueur.x === cle.x && joueur.y === cle.y) {
 
         possedeCle = true;
         affichageCle.textContent = "Clé : trouvée !";
-        message.textContent = "Tu as la clé ! Trouve la sortie !";
-    }
-
-    // Vérifier la sortie
+        message.textContent = "Tu as la clé ! Trouve la sortie !";}
     if (joueur.x === sortie.x && joueur.y === sortie.y) {
 
         if (possedeCle) {
@@ -185,44 +119,27 @@ function deplacerJoueur(dx, dy) {
             termine = true;
         } else {
             message.textContent = "Il te faut la clé pour sortir !";
-        }
-    }
-
-    // Vérifier le monstre
+        }}
     verifierMonstre();
-
-    dessiner();
-}
-
-
-// Détecter les touches du clavier
+    dessiner();}
 document.addEventListener("keydown", function(event) {
 
     if (event.key === "ArrowUp" || event.key === "z") {
-        deplacerJoueur(0, -1);
-    }
+        deplacerJoueur(0, -1);   }
 
     if (event.key === "ArrowDown" || event.key === "s") {
-        deplacerJoueur(0, 1);
-    }
+        deplacerJoueur(0, 1);  }
 
     if (event.key === "ArrowLeft" || event.key === "q") {
-        deplacerJoueur(-1, 0);
-    }
+        deplacerJoueur(-1, 0);  }
 
     if (event.key === "ArrowRight" || event.key === "d") {
-        deplacerJoueur(1, 0);
-    }
+        deplacerJoueur(1, 0); }});
 
-});
-
-
-// Déplacement du monstre
 function deplacerMonstre() {
 
     if (termine) {
-        return;
-    }
+        return; }
 
     let directions = [
         { x: 0, y: -1 },
@@ -238,38 +155,18 @@ function deplacerMonstre() {
 
     let nouveauX = monstre.x + direction.x;
     let nouveauY = monstre.y + direction.y;
-
-    // Vérifier que le monstre ne traverse pas les murs
     if (labyrinthe[nouveauY][nouveauX] === 0) {
-
         monstre.x = nouveauX;
-        monstre.y = nouveauY;
-
-    }
+        monstre.y = nouveauY; }
 
     verifierMonstre();
-    dessiner();
-}
-
-
-// Vérifier si le monstre touche le joueur
+    dessiner();}
 function verifierMonstre() {
-
     if (joueur.x === monstre.x &&
         joueur.y === monstre.y) {
-
         message.textContent = "Le monstre t'a attrapé !";
-        termine = true;
-    }
-}
-
-
-// Recommencer le jeu
+        termine = true; }}
 boutonRecommencer.addEventListener("click", genererLabyrinthe);
-
-
-// Lancer le jeu
 genererLabyrinthe();
 
-// Le monstre bouge toutes les 600 millisecondes
-setInterval(deplacerMonstre, 600);
+setInterval(deplacerMonstre, 50);
