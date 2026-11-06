@@ -49,8 +49,8 @@ function genererLabyrinthe() {
 
     possedeCle = false;
     termine = false;
-message.textContent = "Trouve la clé et rejoins la sortie !";
-affichageCle.textContent = "Clé : non trouvée";
+message.textContent = "trouve la cle et rejoins la sortie ";
+affichageCle.textContent = "Clé : non trouve";
 
     dessiner();}
 function dessiner() {
@@ -111,14 +111,14 @@ function deplacerJoueur(dx, dy) {
 
         possedeCle = true;
         affichageCle.textContent = "Clé : trouvée !";
-        message.textContent = "Tu as la clé ! Trouve la sortie !";}
+        message.textContent = "Tu as la clé  Trouve la sortie ";}
     if (joueur.x === sortie.x && joueur.y === sortie.y) {
 
         if (possedeCle) {
-            message.textContent = "Bravo ! Tu as gagné !";
+            message.textContent = "bravo  Tu as gage";
             termine = true;
         } else {
-            message.textContent = "Il te faut la clé pour sortir !";
+            message.textContent = "Il te faut la cle pour sortir ";
         }}
     verifierMonstre();
     dessiner();}
